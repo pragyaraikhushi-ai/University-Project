@@ -1,437 +1,137 @@
-# 🛡️ Women Safety Environment
+# Women Safety App — Map Backend
 
-### AI-Powered Smart Women Safety Ecosystem
-
-**Women Safety Environment** is an AI-powered safety ecosystem designed to provide **fast, reliable, and intelligent assistance during emergency situations**. The system combines a **mobile application, wearable safety device, AI-based detection, location services, and automated emergency responses** into a single safety platform.
-
-> **One Action. Instant Protection.**
+FastAPI-powered Google Maps backend for the Women Safety Flutter app.
+Provides current-location-aware routing, safety-scored routes, and
+nearby emergency services (police, hospitals, women's safety centres).
 
 ---
 
-## 📌 Table of Contents
+## Endpoints
 
-* [About the Project](#-about-the-project)
-* [Problem Statement](#-problem-statement)
-* [Objectives](#-objectives)
-* [Key Features](#-key-features)
-* [How the System Works](#-how-the-system-works)
-* [System Architecture](#-system-architecture)
-* [AI Features](#-ai-features)
-* [Emergency SOS System](#-emergency-sos-system)
-* [Smart Trigger Word](#-smart-trigger-word)
-* [Wearable Device](#-wearable-device)
-* [Technology Stack](#-technology-stack)
-* [Project Structure](#-project-structure)
-* [Application Screens](#-application-screens)
-* [Development Roadmap](#-development-roadmap)
-* [Future Enhancements](#-future-enhancements)
-* [Privacy and Security](#-privacy-and-security)
-* [Disclaimer](#-disclaimer)
-* [Contributing](#-contributing)
-* [License](#-license)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Liveness check — confirms server is up and API key is set |
+| GET | `/api/geocode` | Convert an address string to lat/lng |
+| GET | `/api/routes` | Fetch safety-ranked routes between two coordinates |
+| GET | `/api/nearby-help` | Find police stations, hospitals, safety centres near a point |
+| GET | `/api/static-map-url` | Get a Google Static Maps image URL for Flutter `Image.network()` |
+
+Interactive documentation: **http://localhost:8000/docs** (Swagger UI)
 
 ---
 
-## 🔐 About the Project
+## Setup
 
-**Women Safety Environment** is a smart safety application intended to assist users in emergency situations.
+### 1 — Python requirement
 
-Traditional emergency applications often require the user to:
+Use **Python 3.12** (pydantic-core has pre-built wheels for 3.12).
 
-1. Unlock the phone.
-2. Open the application.
-3. Find the SOS button.
-4. Press the button.
-5. Wait for the emergency process to start.
-
-During a dangerous situation, these steps may not always be practical.
-
-This project aims to reduce the number of actions required by introducing:
-
-* 🚨 One-tap SOS
-* 🎙️ Voice-based emergency activation
-* 🔑 Custom trigger-word detection
-* 📍 Real-time location sharing
-* 👥 Emergency contacts
-* ⌚ Wearable-device activation
-* 🤖 AI-based safety analysis
-* 📡 Bluetooth communication
-* 📱 Mobile application
-* 🖥️ Safety monitoring dashboard
-* 🔔 Automated emergency notifications
-
----
-
-# 🚨 Problem Statement
-
-Women may encounter situations where they cannot safely access or operate their smartphone.
-
-Examples include:
-
-* Harassment
-* Unsafe surroundings
-* Threatening situations
-* Medical emergencies
-* Being followed
-* Physical danger
-* Situations where using a phone openly is difficult
-
-The objective of this project is to provide a **quick and discreet mechanism for requesting help**.
-
----
-
-# 🎯 Objectives
-
-The main objectives of the project are:
-
-* Provide rapid emergency assistance.
-* Reduce the number of actions required to send an SOS.
-* Allow emergency activation without opening the application.
-* Share the user's location with trusted contacts.
-* Provide multiple emergency activation methods.
-* Integrate a wearable device with the mobile application.
-* Use AI to assist with safety-related detection.
-* Provide an emergency monitoring dashboard.
-* Support operation in situations where internet connectivity may be limited.
-* Maintain user privacy and secure sensitive information.
-
----
-
-# ✨ Key Features
-
-## 🚨 1. Instant SOS
-
-The application provides an emergency SOS mechanism that can initiate an emergency workflow quickly.
-
-Possible activation methods include:
-
-* SOS button in the application
-* Wearable-device button
-* Voice command
-* Trigger word
-* Repeated hardware button press
-
-When SOS is activated, the system can:
-
-```text
-SOS Activated
-      ↓
-Confirm Emergency State
-      ↓
-Obtain Location
-      ↓
-Notify Emergency Contacts
-      ↓
-Share Location
-      ↓
-Start Emergency Monitoring
+```
+py -3.12 --version   # should print Python 3.12.x
 ```
 
----
+### 2 — Install dependencies
 
-## 📍 2. Live Location Sharing
-
-The application can obtain the user's location using GPS and share it with selected emergency contacts.
-
-Example:
-
-```text
-User
- ↓
-GPS Location
- ↓
-Mobile Application
- ↓
-Emergency Backend
- ↓
-Trusted Contacts
+```bash
+cd map-backend
+py -3.12 -m pip install -r requirements.txt
 ```
 
-The location information may include:
+### 3 — Get a Google Maps API key
 
-* Latitude
-* Longitude
-* Timestamp
-* Location accuracy
-* Emergency status
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create or select a project
+3. Enable these APIs:
+   - **Geocoding API**
+   - **Directions API**
+   - **Places API**
+   - **Maps Static API**
+4. Create an API key: **APIs & Services → Credentials → Create Credentials → API Key**
+5. (Recommended) Restrict the key to your server's IP
 
----
+### 4 — Configure the key
 
-## 👥 3. Emergency Contacts
+```bash
+# Copy the example file
+copy .env.example .env
 
-Users can add trusted contacts who may receive emergency alerts.
-
-Example:
-
-```text
-Emergency Contacts
-
-👤 Mother
-📞 +91 XXXXX XXXXX
-
-👤 Father
-📞 +91 XXXXX XXXXX
-
-👤 Friend
-📞 +91 XXXXX XXXXX
+# Open .env and replace YOUR_GOOGLE_MAPS_API_KEY_HERE with your real key
 ```
 
-The user should be able to:
+`.env` contents:
+```
+GOOGLE_MAPS_API_KEY=AIzaSy...your_key_here
+```
 
-* Add contacts
-* Remove contacts
-* Edit contacts
-* Set primary emergency contacts
-* Test emergency notifications
+### 5 — Run the server
+
+```bash
+# Using Python 3.12 directly:
+py -3.12 -m uvicorn main:app --reload --port 8000
+
+# Or using the uvicorn binary (if Python312\Scripts is on PATH):
+uvicorn main:app --reload --port 8000
+```
+
+Server starts at **http://localhost:8000**
 
 ---
 
-# 🎙️ 4. Smart Trigger Word
+## Flutter Integration
 
-One of the major features of the system is **voice-based emergency activation**.
+The Flutter `map_screen.dart` connects to this backend.
+The backend URL defaults to `http://10.0.2.2:8000` (Android emulator)
+or `http://localhost:8000` (web / iOS simulator).
 
-The application can listen for a predefined trigger phrase when the appropriate feature is enabled.
+### Example — Get safe routes
 
-For example:
-
-> **"Help Me"**
-
-When the system detects the configured trigger phrase:
-
-```text
-User speaks trigger phrase
-          ↓
-Voice Detection
-          ↓
-Speech Recognition
-          ↓
-Trigger Word Matching
-          ↓
-Emergency Activation
-          ↓
-SOS Workflow
+```
+GET http://localhost:8000/api/routes
+    ?origin_lat=28.6139&origin_lng=77.2090
+    &dest_lat=28.6448&dest_lng=77.2167
+    &mode=walking
 ```
 
-### Example
-
-```text
-User:
-"Help me"
-
-        ↓
-
-Speech Recognition
-
-        ↓
-
-"help me" detected
-
-        ↓
-
-SOS Activated
-
-        ↓
-
-Location + Emergency Alert
+Response:
+```json
+{
+  "routes": [
+    {
+      "label": "Safest",
+      "distance": "3.2 km",
+      "duration": "42 mins",
+      "safety_score": 82.5,
+      "safety_label": "High Safety",
+      "color_hex": "#4CAF50",
+      "polyline": "encoded...",
+      "steps": [...]
+    }
+  ]
+}
 ```
 
-The trigger phrase should be configurable by the user.
+### Example — Nearby help
 
-> **Important:** Continuous microphone access should be clearly disclosed to the user and implemented according to the operating system's permissions and privacy requirements.
+```
+GET http://localhost:8000/api/nearby-help?lat=28.6139&lng=77.2090&radius=2000
+```
+
+### Example — Static map image
+
+```
+GET http://localhost:8000/api/static-map-url?lat=28.6139&lng=77.2090&zoom=15
+```
+
+Returns a URL you pass directly to Flutter's `Image.network(url)`.
 
 ---
 
-# 🤖 5. AI-Based Safety Detection
+## Dependencies
 
-AI can be incorporated into the system to assist with identifying potentially dangerous situations.
-
-Possible AI components include:
-
-### 🎤 Voice Analysis
-
-The system may analyze speech-related signals for predefined emergency patterns.
-
-### 👤 Facial Expression Analysis
-
-With appropriate user permission, computer vision can analyze facial expressions for signals associated with distress.
-
-Possible pipeline:
-
-```text
-Camera
-  ↓
-Face Detection
-  ↓
-Facial Feature Extraction
-  ↓
-Expression Classification
-  ↓
-Potential Distress Detected
-  ↓
-Safety Workflow
-```
-
-### 🧠 AI Safety Engine
-
-The system can combine multiple signals:
-
-```text
-        ┌───────────────┐
-        │ Voice Signal  │
-        └───────┬───────┘
-                │
-        ┌───────▼───────┐
-        │ Motion/Sensor │
-        └───────┬───────┘
-                │
-        ┌───────▼───────┐
-        │ GPS / Context │
-        └───────┬───────┘
-                │
-        ┌───────▼───────┐
-        │   AI Engine   │
-        └───────┬───────┘
-                │
-        ┌───────▼───────┐
-        │ Safety Event  │
-        └───────────────┘
-```
-
-AI predictions should be treated as **supporting signals**, not as definitive proof that an emergency is occurring.
-
----
-
-# ⌚ 6. Wearable Safety Device
-
-The project can integrate a small wearable device such as:
-
-* Bracelet
-* Ring
-* Pendant
-* Keychain
-* Smart band
-
-The wearable can contain an emergency button or sensor.
-
-Example:
-
-```text
-┌───────────────────────┐
-│    WEARABLE DEVICE    │
-│                       │
-│      [ SOS ]          │
-│                       │
-│  Sensors + Bluetooth  │
-└───────────┬───────────┘
-            │
-        Bluetooth
-            │
-            ▼
-┌───────────────────────┐
-│    MOBILE APP         │
-└───────────┬───────────┘
-            │
-            ▼
-       SOS SYSTEM
-```
-
-### Possible wearable components
-
-* ESP32
-* Push button
-* Accelerometer
-* GPS module
-* Vibration motor
-* LED indicator
-* Bluetooth Low Energy
-* Rechargeable battery
-
----
-
-# 📡 7. Offline / Low-Connectivity Support
-
-Emergency situations may occur when internet connectivity is weak or unavailable.
-
-The system can therefore be designed with a layered communication approach:
-
-```text
-Internet Available?
-       │
-   ┌───┴───┐
-  YES      NO
-   │        │
-   ▼        ▼
-Cloud     Local /
-Backend   Device
-   │        │
-   ▼        ▼
-Alerts   Alternative
-         Communication
-```
-
-Possible technologies include:
-
-* Bluetooth
-* SMS fallback
-* Local device storage
-* Offline SOS event logging
-* GPS
-* Network-aware emergency handling
-
-> Actual offline functionality depends on the device, operating system, hardware, and available communication channels.
-
----
-
-# 🏠 Home Screen
-
-The home screen should provide quick access to the most important safety functions.
-
-Recommended components:
-
-```text
-┌─────────────────────────────────┐
-│        Women Safety App         │
-│                                 │
-│        🟢 Safety Status         │
-│                                 │
-│           🚨 SOS                │
-│        [ HOLD TO SOS ]          │
-│                                 │
-│ 📍 Current Location             │
-│                                 │
-│ 👥 Emergency Contacts           │
-│                                 │
-│ 🎙️ Voice Trigger               │
-│                                 │
-│ ⌚ Wearable Status              │
-│                                 │
-│ 🗺️ Live Location                │
-│                                 │
-│ ⚙️ Settings                     │
-└─────────────────────────────────┘
-```
-
-The **SOS control should be visually prominent** and designed to reduce accidental activation, for example through a hold-to-activate interaction.
-
----
-
-# 🖥️ AI Safety Dashboard
-
-An administrator or authorized monitoring interface can provide information such as:
-
-* Active emergency events
-* Emergency location
-* Device status
-* Alert history
-* Trigger type
-* Timestamp
-* Connected wearable status
-* System health
-
-Example:
-
-```text
-┌───────────────────────────────────────────┐
-│              SAFETY DASHBOARD             │
-├──────────────────────────────────
-```
+| Package | Version | Purpose |
+|---------|---------|---------|
+| fastapi | 0.115.5 | Web framework |
+| uvicorn[standard] | 0.32.1 | ASGI server |
+| httpx | 0.27.2 | Async HTTP client for Google Maps API calls |
+| python-dotenv | 1.0.1 | Load `GOOGLE_MAPS_API_KEY` from `.env` |
+| pydantic | 2.9.2 | Request/response validation |
